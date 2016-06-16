@@ -1,0 +1,559 @@
+Function t_between(x As Double, rg As Range)
+'————————————————编码：11001————————————————
+'##############################################################################################
+'函数作用：判断一金额所属区间，并返回区间对应的名称。rg为最小值>=、最大值<；rg下一列为返回值
+'##############################################################################################
+Dim xx As Integer
+xx = 0
+For i = 1 To rg.Rows.Count - 1
+
+    If x >= rg.Cells(i, 1).Value And x < rg.Cells(i, 2).Value Then
+        xx = i
+        Exit For
+    End If
+Next
+    
+If xx = 0 Then
+        xx = rg.Rows.Count
+End If
+    
+    t_between = rg.Cells(xx, 3).Value
+    
+    If x < rg.Cells(1, 1).Value Then
+        t_between = ""
+
+    End If
+    
+End Function
+Function t_findint(mystring As String) As String
+'————————————————编码：11002————————————————
+'################################################################
+'5.函数作用：从形如"ABCD12455EDF"的字符串中取出数字，包含“.”
+'################################################################
+Dim i As Integer
+charandint = ""
+For i = 1 To Len(mystring)
+    If IsNumeric(Mid(mystring, i, 1)) Or Mid(mystring, i, 1) = "." Then
+    t_findint = t_findint & Mid(mystring, i, 1)
+    End If
+    
+Next
+End Function
+Function t_findchar(mystring As String) As String
+'————————————————编码：11003————————————————
+'################################################################
+'5.函数作用：从形如"ABCD12455EDF"的字符串中取出文本
+'################################################################
+Dim i As Integer
+t_findchar = ""
+For i = 1 To Len(mystring)
+    If IsNumeric(Mid(mystring, i, 1)) = False And Mid(mystring, i, 1) <> "." Then
+    t_findchar = t_findchar & Mid(mystring, i, 1)
+    End If
+    
+Next
+End Function
+Function t_findchinese(mystring As String) As String
+'————————————————编码：11004————————————————
+'################################################################
+'5.函数作用：从形如"ABCD我12455天EDF"的字符串中取出汉字“我天”
+'################################################################
+Dim i As Integer
+t_findchinese = ""
+For i = 1 To Len(mystring)
+'MsgBox (Mid(mystring, i, 1))
+'MsgBox (Asc(Mid(mystring, i, 1)))
+    If Asc(Mid(mystring, i, 1)) < 0 Then
+    
+    t_findchinese = t_findchinese & Mid(mystring, i, 1)
+    End If
+    
+Next
+End Function
+Public Function t_cfl(x As String, n As Integer, xxx As String) As String
+'————————————————编码：11005————————————————
+'######################################################################################
+'数据分列，拆分文本，第一参数为原文本，
+'第二参数为想要的第几个，返回原文本中想要拆分后的第N个文本(可以为-1，表示最后一个，0表示可拆分的个数，-2为倒数第二个)，
+'第三个参数为拆分依据如"\"
+'######################################################################################
+Dim temp As Integer
+Dim mn(100), tempn, x0 As String
+'拆分依据","xxx = ","
+x0 = x
+x = x & xxx
+
+temp = 1
+tempn = 0
+For i = 1 To 100
+
+
+    
+    
+    temp = WorksheetFunction.Find(xxx, x, 1)
+
+    If temp = Len(x) Then
+    mn(i) = Trim(Left(x, temp - 1))
+    tempn = i
+    Exit For
+    Else
+    mn(i) = Trim(Left(x, temp - 1))
+    x = Right(x, Len(x) - temp)
+    End If
+    
+
+
+
+    
+Next
+Select Case n
+Case 0
+t_cfl = tempn
+Case Is < 0
+t_cfl = mn(tempn + 1 + n)
+Case Else
+t_cfl = mn(n)
+End Select
+x = x0
+
+End Function
+Function t_vlookup(x As String, rg As String, n As Integer) As String
+'————————————————编码：11006————————————————
+'################################################################
+'用vlookup查找多个数据并求和。如查找从科目余额表中查找计算存货科目
+'################################################################
+
+
+
+
+Dim u, i As Integer
+Dim xx(100), rg0 As String
+
+'MsgBox (TypeName(rg)) '
+'rg0 = rg.Address
+'MsgBox (rg0)
+t_vlookup = "="
+'x = """ & x & """
+u = t_cfl(x, 0, ",")
+For i = 1 To u
+  
+    xx(i - 1) = Trim(t_cfl(x, i, ","))
+   ' MsgBox (xx(i - 1))
+    
+    
+    If Left(xx(i - 1), 1) = "-" Then
+    xx(i - 1) = Right(xx(i - 1), Len(xx(i - 1)) - 1)
+    t_vlookup = t_vlookup & "-"
+    Else
+    t_vlookup = t_vlookup & "+"
+    End If
+ 
+    
+  t_vlookup = t_vlookup & "IFERROR(VLOOKUP(""" & xx(i - 1) & """," & rg & "," & n & ",FALSE),0)"
+
+Next
+
+   't_vlookup = rg0
+
+
+End Function
+Function t_findlast(x As String, str As String) As Integer
+'————————————————编码：11007————————————————
+'################################################################
+'查找最后一个x在文本str中的位置
+'################################################################
+Dim n, temp As Integer
+n = Len(str)
+
+For i = 1 To n
+If Mid(str, i, 1) = x Then
+t_findlast = i
+End If
+Next
+
+
+
+End Function
+Function Money(Number As Currency)
+'————————————————编码：11008————————————————
+'################################################################
+'7.函数作用:将金额数字转成中文大写
+'################################################################
+    Dim i, j, k, m, leng As Integer '计数器
+    Dim Zero As Integer '连续零标识
+    Dim Tnumber As String '储存数字字符串,计算数组长度
+    Dim Num() As String '定义数组
+    Dim Num1(3) As String '存储万元以下数字
+    Dim Num2(1) As String '储存拆分后的数字
+    Dim Cha(8), Cha1(9), Cha2(4) As String '储存转化后的汉字
+    Dim Zcha As String '连接后的字符串
+    Dim Flag, Flag1 As Boolean '正负标志
+    Flag = True
+    Flag1 = False
+    Zero = 0
+    '如果大于一亿，则不处理
+    If (Number > 99999999) Or (Number < -99999999) Then
+        MsgBox ("Sorry,数据超过一亿，暂不处理。")
+        MsgBox ("顺便问一下，你真有那么多钱吗？")
+        Money = "Sorry!"
+    Else
+        If (Number = 0) Then
+            Money = "零元整"
+        Else
+            '*****将负数数字转化正数并更改标识*****
+            If (Number < 0) Then
+                Number = Number * (-1)
+                Flag = False
+            End If
+            '*****小数点后超过两位，则截断*****
+            If (((Number - Int(Number)) * 100 - Int((Number - Int(Number)) * 100)) > 0) Then
+                Tnumber = CStr(Int(Number * 100) / 100)
+            Else
+                Tnumber = CStr(Number)
+            End If
+            '*****处理四舍五入*****
+            If (((Number - Int(Number)) * 100 - Int((Number - Int(Number)) * 100)) >= 0.5) Then
+                Tnumber = CStr((CCur(Tnumber)) + 0.01)
+            End If
+            Number = CCur(Tnumber)
+            '*****重新分配数组空间*****
+            ReDim Num(Len(Tnumber) - 1) As String
+            '*****将字符串分开存储至数组中*****
+            For i = 0 To Len(Tnumber) - 1
+                Num(i) = Mid(Tnumber, i + 1, 1)
+            Next i
+            '*****定义所需字符*****
+            Dim M1, M2
+            M1 = Array("零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖")
+            M2 = Array("", "拾", "佰", "仟", "万", "亿")
+            '*****处理小于一元金额*****
+            '*****小数点后一位，则*****
+            If ((Number - Int(Number) > 0) And ((Number * 100 - Int(Number) * 100) Mod 10) = 0) Then
+                i = i - 1
+                Num2(0) = Num(i)
+                Num(i) = ""
+                i = i - 1
+                Num(i) = ""
+                i = i - 1
+                Cha2(0) = M1(CByte(Num2(0)))
+                Cha2(1) = "角"
+                Cha2(2) = "整"
+            Else
+                '*****小数点后两位则*****
+                If ((Number - Int(Number) > 0)) Then
+                    i = i - 1
+                    Num2(1) = Num(i)
+                    Num2(0) = Num(i - 1)
+                    Num(i) = ""
+                    i = i - 1
+                    Num(i) = ""
+                    i = i - 1
+                    Num(i) = ""
+                    i = i - 1
+                    Cha2(0) = M1(CByte(Num2(0)))
+                    Cha2(1) = "角"
+                    Cha2(2) = M1(CByte(Num2(1)))
+                    Cha2(3) = "分"
+                End If
+            End If
+            '*****分解大于一万的整数部分*****
+            If (Int(Number) > 9999) Then
+                If (Cha2(0) <> "") Then
+                    i = i + 1
+                End If
+                For j = 3 To 0 Step -1
+                    Num1(j) = Num(i - 1)
+                    Num(i - 1) = ""
+                    i = i - 1
+                Next j
+            Else
+                If (Cha2(0) <> "") Then
+                    i = i + 1
+                End If
+                For j = 0 To i - 1
+                    Num1(j) = Num(j)
+                    Num(j) = ""
+                Next j
+            End If
+            '*****转换万元以上数字*****
+            If (Num(0) <> "") Then
+                leng = i
+                j = 0
+                For k = 0 To leng - 1
+                    If (Num(k) = "0") Then
+                        Zero = Zero + 1
+                        For m = 1 To 5
+                            If (Cha(j - 1) = M2(m)) Then
+                                Flag1 = True
+                            End If
+                        Next m
+                        If ((Zero = 1) And (Flag1 = False)) Then
+                            Cha(j) = M1(CByte(Num(k)))
+                        End If
+                        If (Zero = 1) Then
+                            j = j + 1
+                        End If
+                    Else
+                        If (Num(k) <> "") Then
+                            If (Zero > 0) Then
+                                Cha(j - 1) = "零"
+                            End If
+                            Cha(j) = M1(CByte(Num(k)))
+                        End If
+                        j = j + 1
+                    End If
+                    If (Num(k) = "0") Then
+                        i = i - 1
+                    Else
+                        Cha(j) = M2(i - 1)
+                        j = j + 1
+                        i = i - 1
+                        Zero = 0
+                    End If
+                Next k
+                Cha(j - 1) = "万"
+                Zero = 0
+            End If
+            '*****转换万元以下数字*****
+            If (Num1(0) <> "") Then
+                j = 0
+                Flag1 = False
+                leng = 3
+                While (Num1(leng) = "")
+                    leng = leng - 1
+                Wend
+                i = leng + 1
+                For k = 0 To leng
+                    If (Num1(k) <> "") Then
+                        If (Num1(k) = "0") Then
+                            Zero = Zero + 1
+                            For m = 1 To 5
+                                If (j <> 0) Then
+                                    If (Cha1(j - 1) = M2(m)) Then
+                                        Flag1 = True
+                                    End If
+                                End If
+                            Next m
+                            If ((Zero = 1) And (Flag1 = False)) Then
+                                Cha1(j) = M1(CByte(Num1(k)))
+                            End If
+                            If (Zero = 1) Then
+                                j = j + 1
+                            End If
+                        Else
+                            If (Num1(k) <> "") Then
+                                If (Zero > 0) Then
+                                    Cha1(j - 1) = "零"
+                                End If
+                                Cha1(j) = M1(CByte(Num1(k)))
+                            End If
+                            j = j + 1
+                        End If
+                        If (Num1(k) = "0") Then
+                            i = i - 1
+                        Else
+                            Cha1(j) = M2(i - 1)
+                            j = j + 1
+                            i = i - 1
+                            Zero = 0
+                        End If
+                    End If
+                Next k
+                Cha1(j - 1) = "元"
+                If (Cha2(0) = "") Then
+                    Cha1(j) = "整"
+                End If
+            End If
+            '*****连接字符串*****
+            j = 0
+            While (Cha(j) <> "")
+                Zcha = Zcha & Cha(j)
+                j = j + 1
+            Wend
+            j = 0
+            While (Cha1(j) <> "")
+                Zcha = Zcha & Cha1(j)
+                j = j + 1
+            Wend
+            j = 0
+            While (Cha2(j) <> "")
+                Zcha = Zcha & Cha2(j)
+                j = j + 1
+            Wend
+            '*****最终显示*****
+            If (Flag) Then
+                Money = Zcha
+            Else
+                Money = "负" & Zcha
+            End If
+        End If
+    End If
+End Function
+Function t_findsame(x As String, rg As Range) As String
+'————————————————编码：11009————————————————
+'################################################################
+'比较两字符串中相同字符的个数,返回相同字符数最多的文本
+'################################################################
+Dim i, ln As Integer
+Dim xx, xn, mystring, temp, xxx As String
+xxx = ""
+For i = 1 To rg.Rows.Count
+    mystring = rg.Cells(i, 1).Value
+
+    temp = ""
+    For j = 1 To Len(x)
+        xn = Mid(x, j, 1)
+        For k = 1 To Len(mystring)
+            If Mid(mystring, k, 1) = xn Then
+            temp = temp & xn
+            Exit For
+            End If
+        Next
+    Next
+    If Len(xxx) < Len(temp) Then
+    xxx = temp
+    t_findsame = mystring
+        
+    End If
+Next
+
+End Function
+
+
+Function t_gs_num(Number As Currency)
+'————————————————编码：11010————————————————
+'################################################################
+'7.函数作用:将金额数字用分隔符隔开，并做为文本处理，在复制时不会因格式问题，不能筛选
+'################################################################
+    Dim i, j, k, m, leng, nl, n0, nz, nx As Integer '计数器
+    Dim Zero As Integer '连续零标识
+    Dim Tnumber As String '储存数字字符串,计算数组长度
+    Dim Num() As String '定义数组
+    Dim Num1(3) As String '存储万元以下数字
+    Dim Num2(1) As String '储存拆分后的数字
+    Dim Cha(8), Cha1(9), Cha2(4) As String '储存转化后的汉字
+    Dim Zcha, x, xx As String '连接后的字符串
+    Dim Flag, Flag1 As Boolean '正负标志
+    Flag = True
+    Flag1 = False
+    Zero = 0
+    
+                '*****将负数数字转化正数并更改标识*****
+            If (Number < 0) Then
+                Number = Number * (-1)
+                Flag = False
+            End If
+    '小数部分
+ nx = (Number - Int(Number)) * 100
+ If nx = 0 Then
+ xx = "00"
+ Else
+    If nx < 10 Then
+    xx = "0" & nx
+   
+    Else
+    xx = Left(nx, 2)
+    End If
+    
+ End If
+
+ 
+ '整数部分
+ 
+ Number = Int(Number)
+If Number < 100 Then
+    t_gs_num = Number & "." & xx
+Else
+
+
+
+            '*****小数点后超过两位，则截断*****
+            If (((Number - Int(Number)) * 100 - Int((Number - Int(Number)) * 100)) > 0) Then
+                Tnumber = CStr(Int(Number * 100) / 100)
+            Else
+                Tnumber = CStr(Number)
+            End If
+            '*****处理四舍五入*****
+            If (((Number - Int(Number)) * 100 - Int((Number - Int(Number)) * 100)) >= 0.5) Then
+                Tnumber = CStr((CCur(Tnumber)) + 0.01)
+            End If
+            
+            Number = CCur(Tnumber)
+            
+            '*****重新分配数组空间*****
+            ReDim Num(Len(Tnumber) - 1) As String
+            '*****将字符串分开存储至数组中*****
+            For i = 0 To Len(Tnumber) - 1
+                Num(i) = Mid(Tnumber, i + 1, 1)
+            Next i
+         
+          '****
+          Zcha = Right(Tnumber, 3)
+          Tnumber = Left(Tnumber, Len(Tnumber) - 3)
+          
+         Do While Len(Tnumber) >= 3
+                 
+         x = Right(Tnumber, 3)
+         Tnumber = Left(Tnumber, Len(Tnumber) - 3)
+         Zcha = x & "," & Zcha
+         Loop
+         
+         If Len(Tnumber) <> 0 Then
+         
+          Zcha = Tnumber & "," & Zcha & "." & xx
+          Else
+          Zcha = Zcha & "." & xx
+          
+        End If
+
+    
+t_gs_num = Zcha
+      
+End If
+    
+    
+
+End Function
+Function t_partstr(mystring As String, rg As Range)
+'————————————————编码：11011————————————————
+'********************************************************
+'取原文本指定位置字符拼接
+'起  止  长度
+'2   2   1
+'4   7   4
+'********************************************************
+Dim xx As String
+
+For i = 1 To rg.Rows.Count
+    xx = ""
+    xx = Mid(mystring, rg.Cells(i, 1).Value, rg.Cells(i, 3).Value)
+    t_partstr = t_partstr & xx
+Next
+
+End Function
+
+'*********************************************************************
+'个税计算公式
+'| 应纳税额  | 税率 | 速算 扣除数 |
+'|----------+------+------------|
+'|        0 |    0 |          0 |
+'|     1500 |    3 |        105 |
+'|     4500 |   10 |        555 |
+'|     9000 |   20 |       1005 |
+'|    35000 |   25 |       2755 |
+'|    55000 |   35 |       5505 |
+'|    80000 |   45 |      13505 |
+Function t_tax(x As Double, s As String)
+   If s = "" Then
+      t_tax = "=ROUND(MAX((" & x & "-3500)*{3,10,20,25,30,35,45}%-{0,105,555,1005,2755,5505,13505},0),2)"
+   End If
+   
+   If s = "税率" Then
+     t_tax = "=vlookup(max(" & x & ", 0), {0,0,0;1500,3,105;4500,10,555;9000,20,1005;35000,25,2755;55000,35,5505;80000,45,13505}, 2)"
+   End If
+            
+   If s = "速算扣除数" Then
+             t_tax = "=vlookup(max(" & x & ", 0), {0,0,0;1500,3,105;4500,10,555;9000,20,1005;35000,25,2755;55000,35,5505;80000,45,13505}, 3)"
+   End If
+End Function
+'*********************************************************************

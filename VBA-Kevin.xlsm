@@ -1,3 +1,4 @@
+# MergeWorkbooks
 Sub MergeWorkbooks()
 
 Dim usd As Integer
@@ -34,7 +35,7 @@ Next
 End Sub
 
 
-
+# MergeSheets
 Sub MergeSheets()
 
 Dim usd, usht As Integer
